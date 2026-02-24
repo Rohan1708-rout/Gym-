@@ -34,7 +34,6 @@
 const API_URL =
 "https://script.google.com/macros/s/AKfycbyYYJVtEKso8Zg8hlH_2W1-5GgljGMYG9B9Cpw6q1Z_nf6SriMvKeQvDX2E2aSMc_x0yg/exec";
 
-
 // ----------------------------
 // generate time slots
 // ----------------------------
@@ -86,15 +85,15 @@ async function book(){
 
   try{
 
-    const res = await fetch(API_URL,{
-      method:"POST",
-      body: JSON.stringify(data)
-    });
+const res = await fetch(API_URL,{
+  method:"POST",
+  body: JSON.stringify(data)
+});
 
-    await res.json();
+await res.text();
 
-    document.getElementById("msg").innerText =
-      "Booking successful. Check your email.";
+document.getElementById("msg").innerText =
+  "Booking successful. Check your email.";
 
   }catch(err){
 
