@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Booking</title>
-  <style>
-    body{
-      font-family: Arial;
-      max-width:400px;
-      margin:40px auto;
-    }
-    input,select,button{
-      width:100%;
-      padding:8px;
-      margin:8px 0;
-    }
-  </style>
+<title>Booking</title>
+<style>
+body{font-family:Arial;max-width:400px;margin:40px auto;}
+input,select,button{width:100%;padding:8px;margin:8px 0;}
+</style>
 </head>
 <body>
 
 <h2>Book a time slot</h2>
 
-<input id="name" placeholder="Your name" required>
-<input id="email" type="email" placeholder="Your email" required>
-<input id="date" type="date" required>
+<input id="name" placeholder="Your name">
+<input id="email" type="email" placeholder="Your email">
+<input id="date" type="date">
 
 <select id="time"></select>
 
@@ -34,74 +26,75 @@
 const API_URL =
 "https://script.google.com/macros/s/AKfycbyYYJVtEKso8Zg8hlH_2W1-5GgljGMYG9B9Cpw6q1Z_nf6SriMvKeQvDX2E2aSMc_x0yg/exec";
 
-// ----------------------------
-// generate time slots
-// ----------------------------
+
 const timeSelect = document.getElementById("time");
 
-function generateSlots(start = "09:00", end = "21:00", step = 30){
+function generateSlots(start="09:00",end="21:00",step=30){
 
-  const toMinutes = t => {
-    const [h,m] = t.split(":");
-    return (+h)*60 + (+m);
+  const toMin = t=>{
+    const p=t.split(":");
+    return (+p[0])*60+(+p[1]);
   };
 
-  let current = toMinutes(start);
-  const endMin = toMinutes(end);
+  let c=toMin(start);
+  const e=toMin(end);
 
-  while(current <= endMin){
+  while(c<=e){
+    const h=String(Math.floor(c/60)).padStart(2,"0");
+    const m=String(c%60).padStart(2,"0");
 
-    const h = String(Math.floor(current / 60)).padStart(2,"0");
-    const m = String(current % 60).padStart(2,"0");
+    const o=document.createElement("option");
+    o.value=h+":"+m;
+    o.textContent=h+":"+m;
+    timeSelect.appendChild(o);
 
-    const opt = document.createElement("option");
-    opt.value = `${h}:${m}`;
-    opt.textContent = `${h}:${m}`;
-    timeSelect.appendChild(opt);
-
-    current += step;
+    c+=step;
   }
 }
 
 generateSlots();
 
 
-// ----------------------------
-// booking
-// ----------------------------
 async function book(){
 
-  const data = {
-    name: document.getElementById("name").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    date: document.getElementById("date").value,
-    time: document.getElementById("time").value
+  const data={
+    name:document.getElementById("name").value.trim(),
+    email:document.getElementById("email").value.trim(),
+    date:document.getElementById("date").value,
+    time:document.getElementById("time").value
   };
 
-  if(!data.name || !data.email || !data.date || !data.time){
-    document.getElementById("msg").innerText = "Please fill all fields";
+  if(!data.name||!data.email||!data.date||!data.time){
+    msg("Fill all fields");
     return;
   }
 
   try{
 
-const res = await fetch(API_URL,{
-  method:"POST",
-  body: JSON.stringify(data)
-});
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(data)
+    });
 
-await res.text();
+    const r = await res.json();
 
-document.getElementById("msg").innerText =
-  "Booking successful. Check your email.";
+    if(r.status !== "ok"){
+      throw r;
+    }
+
+    msg("Booking successful. Check your email.");
 
   }catch(err){
-
     console.error(err);
-    document.getElementById("msg").innerText =
-      "Error. Please try again.";
-
+    msg("Error. Please try again.");
   }
+}
+
+function msg(t){
+  document.getElementById("msg").innerText=t;
 }
 
 </script>
