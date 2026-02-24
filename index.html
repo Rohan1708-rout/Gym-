@@ -81,15 +81,15 @@ async function book(){
 
     const r = await res.json();
 
-    if(r.status !== "ok"){
-      throw r;
+    if(!r || r.status !== "ok"){
+  throw r;
     }
 
     msg("Booking successful. Check your email.");
 
   }catch(err){
     console.error(err);
-    msg("Error. Please try again.");
+    msg("ERROR: " + JSON.stringify(err));
   }
 }
 
