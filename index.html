@@ -3,8 +3,16 @@
 <head>
   <title>Booking</title>
   <style>
-    body{font-family:Arial;max-width:400px;margin:40px auto;}
-    input,select,button{width:100%;padding:8px;margin:8px 0;}
+    body{
+      font-family: Arial;
+      max-width:400px;
+      margin:40px auto;
+    }
+    input,select,button{
+      width:100%;
+      padding:8px;
+      margin:8px 0;
+    }
   </style>
 </head>
 <body>
@@ -15,13 +23,7 @@
 <input id="email" type="email" placeholder="Your email" required>
 <input id="date" type="date" required>
 
-<select id="time">
-  <option>10:00</option>
-  <option>11:00</option>
-  <option>12:00</option>
-  <option>14:00</option>
-  <option>15:00</option>
-</select>
+<select id="time"></select>
 
 <button onclick="book()">Book</button>
 
@@ -31,22 +33,80 @@
 
 const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEBAPP_URL";
 
+
+// ---------------------------
+// Generate all time slots
+// ---------------------------
+const timeSelect = document.getElementById("time");
+
+function generateSlots(start = "09:00", end = "21:00", step = 30){
+
+  const toMinutes = t => {
+    const [h,m] = t.split(":");
+    return (+h)*60 + (+m);
+  };
+
+  let current = toMinutes(start);
+  const endMin = toMinutes(end);
+
+  while(current <= endMin){
+
+    const h = String(Math.floor(current / 60)).padStart(2,"0");
+    const m = String(current % 60).padStart(2,"0");
+
+    const opt = document.createElement("option");
+    opt.value = `${h}:${m}`;
+    opt.textContent = `${h}:${m}`;
+
+    timeSelect.appendChild(opt);
+
+    current += step;
+  }
+}
+
+generateSlots();
+
+
+// ---------------------------
+// Booking
+// ---------------------------
 async function book(){
 
   const data = {
-    name: name.value,
-    email: email.value,
-    date: date.value,
-    time: time.value
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    date: document.getElementById("date").value,
+    time: document.getElementById("time").value
   };
 
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body: JSON.stringify(data)
-  });
+  if(!data.name || !data.email || !data.date || !data.time){
+    document.getElementById("msg").innerText =
+      "Please fill all fields";
+    return;
+  }
 
-  document.getElementById("msg").innerText =
-    "Booking successful!";
+  try{
+
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    const r = await res.json();
+
+    document.getElementById("msg").innerText =
+      "Booking successful. Check your email.";
+
+  }catch(err){
+
+    document.getElementById("msg").innerText =
+      "Error. Please try again.";
+
+    console.error(err);
+  }
 }
 
 </script>
